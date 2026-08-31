@@ -1,2 +1,0 @@
-# SHOP
-Efficient Fashion
