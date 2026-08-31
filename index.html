@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHOP — Efficient Fashion</title>
+  <meta name="description" content="A modern storefront built with clean, minimal style." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#" class="logo">SHOP<span class="dot">.</span></a>
+
+      <nav class="nav" id="nav">
+        <a href="#new">New In</a>
+        <a href="#collection">Collection</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn" aria-label="Search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <button class="icon-btn" aria-label="Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <p class="eyebrow">Autumn / Winter 2026</p>
+        <h1>Efficient fashion,<br>made to last.</h1>
+        <p class="hero-sub">Considered pieces for everyday wear — minimal design, honest materials, no noise.</p>
+        <div class="hero-actions">
+          <a href="#collection" class="btn btn-primary">Shop the Collection</a>
+          <a href="#about" class="btn btn-ghost">Our Story</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="strip">
+      <div class="container strip-inner">
+        <span>Free shipping over $75</span>
+        <span>30-day returns</span>
+        <span>Carbon-neutral delivery</span>
+        <span>Ethically made</span>
+      </div>
+    </section>
+
+    <section class="section" id="new">
+      <div class="container">
+        <div class="section-head">
+          <h2>New In</h2>
+          <a href="#collection" class="link">View all</a>
+        </div>
+
+        <div class="product-grid" id="productGrid"></div>
+      </div>
+    </section>
+
+    <section class="feature" id="about">
+      <div class="container feature-inner">
+        <div class="feature-text">
+          <p class="eyebrow">Our Story</p>
+          <h2>Design that respects your time, and the planet's.</h2>
+          <p>We keep our range small and considered — fewer pieces, better made, worn longer. Every item is designed to mix and match, so building an outfit never feels like work.</p>
+          <a href="#contact" class="link">Get in touch →</a>
+        </div>
+        <div class="feature-media" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="section" id="collection">
+      <div class="container">
+        <div class="section-head">
+          <h2>The Collection</h2>
+        </div>
+        <div class="product-grid" id="collectionGrid"></div>
+      </div>
+    </section>
+
+    <section class="newsletter" id="contact">
+      <div class="container newsletter-inner">
+        <h2>Stay in the loop</h2>
+        <p>New drops, restocks, and the occasional discount. No spam, ever.</p>
+        <form class="newsletter-form" id="newsletterForm">
+          <input type="email" placeholder="you@example.com" required aria-label="Email address" />
+          <button type="submit" class="btn btn-primary">Subscribe</button>
+        </form>
+        <p class="form-note" id="formNote" role="status"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a href="#" class="logo">SHOP<span class="dot">.</span></a>
+        <p>Efficient fashion, made to last.</p>
+      </div>
+      <div class="footer-col">
+        <h3>Shop</h3>
+        <a href="#new">New In</a>
+        <a href="#collection">Collection</a>
+      </div>
+      <div class="footer-col">
+        <h3>Company</h3>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h3>Follow</h3>
+        <a href="#">Instagram</a>
+        <a href="#">Twitter / X</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>&copy; <span id="year"></span> SHOP. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
