@@ -10,7 +10,8 @@
     "moduleResolution": "nodenext",
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
-    "noEmit": true,
+    "outDir": "./dist-server",
+    "rootDir": "./server",
 
     "strict": true,
     "noUnusedLocals": true,
