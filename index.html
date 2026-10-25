@@ -250,11 +250,12 @@ img{ display:block }
 .prod__meta{ display:flex; justify-content:space-between; align-items:flex-start; font-size:.75rem; text-transform:uppercase; letter-spacing:.025em; color:rgba(255,255,255,.45) }
 .prod__badge{ width:2.75rem; height:2.75rem; display:grid; place-items:center; border-radius:9999px; background:rgba(255,255,255,.1); color:#fff; box-shadow:0 0 0 1px rgba(255,255,255,.15); font-size:1rem;
   transition:transform .5s var(--e-snap) }
-.prod__vis{ position:relative; height:15rem; display:grid; place-items:center; margin-block:.5rem 1rem }
-@media (min-width:640px){ .prod__vis{ height:18rem } }
+.prod__vis{ position:relative; height:17rem; display:grid; place-items:center; margin-block:.5rem 1rem }
+@media (min-width:640px){ .prod__vis{ height:21rem } }
 .prod__vis::before{ content:""; position:absolute; width:14rem; height:14rem; border-radius:50%; background:radial-gradient(circle, var(--glow) 0%, transparent 65%); opacity:.35 }
 .prod__vis svg{ position:relative; height:100%; width:auto; transform:rotate(-12deg); transition:transform .7s var(--e-snap); filter:drop-shadow(0 1.5rem 1.5rem rgba(0,0,0,.5)) }
-.prod__vis sup{ position:absolute; top:1rem; right:calc(50% - 5rem); font-size:.75rem; color:rgba(255,255,255,.6) }
+.prod__vis img{ position:relative; height:100%; width:auto; max-width:100%; object-fit:contain; transition:transform .7s var(--e-snap);
+  -webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%, #000 70%, transparent 100%); mask-image:radial-gradient(ellipse 50% 50% at 50% 50%, #000 70%, transparent 100%) }
 .prod__body{ margin-top:auto }
 .prod h3{ font-size:1.5rem; font-weight:500; letter-spacing:-.01em }
 @media (min-width:640px){ .prod h3{ font-size:1.875rem } }
@@ -399,6 +400,8 @@ img{ display:block }
 .cline:last-child{ border-bottom:0 }
 .cline__img{ width:4.5rem; height:4.5rem; flex:none; display:grid; place-items:center; border-radius:.875rem; background:#0a0a0a; padding:.375rem }
 .cline__img svg{ height:100%; width:auto; transform:rotate(-12deg) }
+.cline__img:has(img){ padding:0; overflow:hidden }
+.cline__img img{ width:100%; height:100%; object-fit:cover; transform:scale(1.15) }
 .cline__info{ flex:1; min-width:0 }
 .cline__name{ font-weight:500 }
 .cline__meta{ font-size:.75rem; color:rgba(17,17,17,.5); margin-top:.125rem }
@@ -436,6 +439,7 @@ img{ display:block }
   .prod:hover{ transform:translateY(-8px) scale(1.012) }
   .prod:hover .prod__badge{ transform:rotate(45deg) scale(1.08) }
   .prod:hover .prod__vis svg{ transform:rotate(-4deg) translateY(-.5rem) }
+  .prod:hover .prod__vis img{ transform:scale(1.05) translateY(-.5rem) }
   .row:hover{ background:rgba(241,240,238,1); padding-left:2rem; padding-right:1.25rem }
   .row:hover .row__b{ transform:translateX(5px) }
   .alink:hover > span{ transform:translateX(4px); opacity:1 }
@@ -803,17 +807,19 @@ const HEADS = {
   teardrop: 'M100 10C152 10 182 38 182 84C182 140 152 172 124 188C116 192 112 198 110 206H90C88 198 84 192 76 188C48 172 18 140 18 84C18 38 48 10 100 10Z',
   diamond:  'M100 10C142 10 184 34 184 74C184 130 154 168 124 188C116 192 112 198 110 206H90C88 198 84 192 76 188C46 168 16 130 16 74C16 34 58 10 100 10Z',
 };
+// Product photography generated with Higgsfield; the drawn SVG racquet is the fallback if a photo fails to load.
+const PHOTO = name => `https://d8j0ntlcm91z4.cloudfront.net/user_3J92VvkjuX7fi1Mkz6GFX5xIAT4/${name}_min.webp`;
 const PRODUCTS = [
-  { id:'apex', name:'Apex 12K', series:'Power', shape:'Diamond', weight:'365 g', price:289, head:'diamond',
+  { id:'apex', img:PHOTO('hf_20261025_170529_69c81155-aec3-4a8f-b965-2e7e23a805a8'), name:'Apex 12K', series:'Power', shape:'Diamond', weight:'365 g', price:289, head:'diamond',
     desc:'A 12K carbon face and high balance for players who finish the point at the net.',
     tags:['Diamond','12K Carbon','Advanced'], face:['#cf8047','#97501f'], rim:'#f1f0ee', stripe:'#0a0a0a', grip:'#1c1c1c', glow:'#cf8047' },
-  { id:'control', name:'Control Pro', series:'Control', shape:'Round', weight:'355 g', price:219, head:'round',
+  { id:'control', img:PHOTO('hf_20261025_170610_84b30228-2279-47a0-823c-1f63f9f0cea1'), name:'Control Pro', series:'Control', shape:'Round', weight:'355 g', price:219, head:'round',
     desc:'Low balance and a soft EVA core for pinpoint lobs, deep chiquitas, and long rallies.',
     tags:['Round','Soft EVA','Intermediate'], face:['#f1f0ee','#c9c9c9'], rim:'#b15f2c', stripe:'#b15f2c', grip:'#e3e2df', glow:'#f1f0ee' },
-  { id:'hybrid', name:'Hybrid 18K', series:'Hybrid', shape:'Teardrop', weight:'360 g', price:319, head:'teardrop',
+  { id:'hybrid', img:PHOTO('hf_20261025_170610_5e46c907-e7f2-423d-8a5a-8c236b687aa3'), name:'Hybrid 18K', series:'Hybrid', shape:'Teardrop', weight:'360 g', price:319, head:'teardrop',
     desc:'An 18K face over a dual-density core — power when you want it, touch when you need it.',
     tags:['Teardrop','18K Carbon','All-court'], face:['#3a3a3a','#141414'], rim:'#cf8047', stripe:'#cf8047', grip:'#2a2a2a', glow:'#97501f' },
-  { id:'rise', name:'Rise Lite', series:'Starter', shape:'Round', weight:'340 g', price:139, head:'round',
+  { id:'rise', img:PHOTO('hf_20261025_170646_0d1b6e62-bbce-46c2-92f4-2e445cfed044'), name:'Rise Lite', series:'Starter', shape:'Round', weight:'340 g', price:139, head:'round',
     desc:'A forgiving fibreglass face and light frame that make your first hundred matches easy.',
     tags:['Round','Fibreglass','Beginner'], face:['#e3e2df','#8d8d8d'], rim:'#ffffff', stripe:'#111111', grip:'#b6b6b6', glow:'#b6b6b6' },
 ];
@@ -892,6 +898,18 @@ function courtSVG(t){
   </g>` : ''}
   </svg>`;
 }
+function productVisual(p, prefix){
+  return p.img
+    ? `<img src="${p.img}" alt="${p.name} padel racquet" loading="lazy" decoding="async" data-fallback="${prefix}:${p.id}">`
+    : racquetSVG(p, prefix);
+}
+// swap a failed product photo for its drawn racquet
+document.addEventListener('error', e => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement) || !img.dataset.fallback) return;
+  const [prefix, id] = img.dataset.fallback.split(':');
+  img.outerHTML = racquetSVG(PRODUCTS.find(p => p.id === id), prefix);
+}, true);
 const svgURI = s => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
 const COURT_BASE = courtSVG({ sky1:'#ecebe9', sky2:'#d2d1ce', sun:.7, floor1:'#b7bdbe', floor2:'#9199a0', glow:.35, line:'rgba(255,255,255,.92)',
   glass:'rgba(255,255,255,.28)', glassStroke:'rgba(255,255,255,.75)', post:'rgba(17,17,17,.55)', mesh:'rgba(17,17,17,.16)', net:'rgba(17,17,17,.5)', netTop:'#f1f0ee', ball:false });
@@ -905,7 +923,7 @@ document.getElementById('prodGrid').innerHTML = PRODUCTS.map((p, i) => `
   <li class="rv" style="--d:${i * 90}ms">
     <article class="prod" style="--glow:${p.glow}">
       <div class="prod__meta"><span>${p.series} — ${p.shape}</span><span class="prod__badge"><i data-i="arrow-up-right"></i></span></div>
-      <div class="prod__vis">${racquetSVG(p, 'p')}<sup>®</sup></div>
+      <div class="prod__vis">${productVisual(p, 'p')}</div>
       <div class="prod__body">
         <h3>${p.name}</h3>
         <p>${p.desc}</p>
@@ -1210,7 +1228,7 @@ function renderCart(bump){
   document.getElementById('cartList').innerHTML = lines.map(([id, q]) => {
     const p = byId[id];
     return `<div class="cline">
-      <div class="cline__img">${racquetSVG(p, 'c')}</div>
+      <div class="cline__img">${productVisual(p, 'c')}</div>
       <div class="cline__info">
         <p class="cline__name">${p.name}</p>
         <p class="cline__meta">${p.shape} · ${p.weight}</p>
