@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[BRAND NAME] — Scent and Memory</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Italiana&family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@1,500&display=swap');
+
+        /* Scent accent colour (animatable so UI accents fade with the background glow) */
+        @property --accent {
+            syntax: '<color>';
+            inherits: true;
+            initial-value: #6f9a74;
+        }
+
+        :root {
+            --accent: #6f9a74;
+            transition: --accent 1.4s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+
+        html, body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        body {
+            min-height: 900vh;
+            font-family: 'Outfit', sans-serif;
+            color: #ffffff;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        * { cursor: none !important; }
+
+        input { user-select: text; }
+
+        ::-webkit-scrollbar { display: none; width: 0; }
+
+        #webgl {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            outline: none;
+        }
+
+        /* ---------- Custom cursor ---------- */
+        .cursor-inner {
+            position: fixed; top: 0; left: 0;
+            width: 6px; height: 6px;
+            border: 2px solid rgba(255, 255, 255, 1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .cursor-outer {
+            position: fixed; top: 0; left: 0;
+            width: 40px; height: 40px;
+            border: 1.5px solid rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9998;
+            transition: width 0.3s, height 0.3s, background 0.3s;
+        }
+
+        /* ---------- Overlay layer ---------- */
+        .cinematic-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 0 60px 40px 60px;
+            box-sizing: border-box;
+        }
+
+        /* ---------- Header ---------- */
+        .main-header {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; z-index: 20;
+            pointer-events: auto;
+            padding: 20px 0;
+        }
+        .brand { font-size: 14px; font-weight: 600; letter-spacing: 5px; text-transform: uppercase; }
+        .header-nav { display: flex; align-items: center; gap: 24px; }
+        .nav-link {
+            position: relative;
+            color: #ffffff; text-decoration: none;
+            font-size: 10px; text-transform: uppercase; letter-spacing: 2px;
+            font-weight: 500; transition: color 0.3s;
+        }
+        .nav-link:hover { color: #ffffff; }
+        .nav-link::after {
+            content: '';
+            position: absolute; left: 0; right: 2px; bottom: -6px;
+            height: 1px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .nav-link.is-active::after { transform: scaleX(1); }
+        .nav-dot { width: 3px; height: 3px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; }
+        .contact-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 24px;
+            background: #ffffff; color: #000000;
+            text-decoration: none;
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+            border-radius: 20px;
+            transition: transform 0.3s, background 0.3s;
+        }
+        .btn-circle {
+            display: inline-block; width: 6px; height: 6px;
+            border: 1px solid #000000; border-radius: 50%; background: transparent;
+        }
+        .contact-btn:hover { transform: scale(1.05); background: #f0f0f0; }
+        .bag-count {
+            display: none;
+            min-width: 16px; height: 16px; padding: 0 4px;
+            border-radius: 8px;
+            background: #000000; color: #ffffff;
+            font-size: 9px; line-height: 16px; text-align: center; letter-spacing: 0;
+        }
+        .bag-count.has-items { display: inline-block; }
+
+        /* ---------- Slides ---------- */
+        .slide { position: absolute; bottom: 12%; pointer-events: none; transition: opacity 0.6s ease; }
+        /* hide the cinematic text while the shop sections are on screen */
+        .cinematic-container.in-shop .slide,
+        .cinematic-container.in-shop .slide-image-mask { opacity: 0 !important; pointer-events: none; }
+        .word { display: inline-block; white-space: nowrap; }
+
+        #slide-1 { left: 0; width: 100%; }
+        #slide-1 .slide-title { margin-left: 60px; }
+        #slide-1 .desc-row { position: relative; display: flex; width: 100%; }
+        #slide-1 .col-1 {
+            margin-left: 60px;
+            width: calc(25vw - 60px);
+            max-width: calc(25vw - 60px);
+        }
+        #slide-1 .col-2 {
+            position: absolute;
+            left: calc(25vw + 40px);
+            width: calc(25vw - 60px);
+            max-width: calc(25vw - 60px);
+        }
+
+        #slide-2 { left: 0; width: 100%; }
+        #slide-2-img {
+            position: fixed;
+            top: 90px;
+            left: 60px;
+            width: calc(25vw - 60px);
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            z-index: 2;
+            pointer-events: none;
+            clip-path: inset(0 0 100% 0);
+            transition: clip-path 1.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+            opacity: 0;
+        }
+        #slide-2-img img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transform: scale(1.15);
+            transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #slide-2-img.active { clip-path: inset(0 0 0 0); opacity: 1; }
+        #slide-2-img.active img { transform: scale(1); }
+
+        #slide-2 .slide-title { margin-left: calc(25vw + 40px); }
+        #slide-2 .slide-desc {
+            margin-left: calc(50vw + 20px);
+            width: calc(25vw - 60px);
+            max-width: calc(25vw - 60px);
+        }
+
+        #slide-3 {
+            left: calc(50vw + 20px);
+            width: calc(25vw - 60px);
+            max-width: calc(25vw - 60px);
+        }
+        #slide-3 .slide-title { white-space: nowrap; }
+
+        #slide-4 { left: calc(25% + 40px); max-width: 600px; }
+
+        .slide-title {
+            font-family: 'Italiana', serif;
+            font-size: 116px;
+            line-height: 1.0;
+            font-weight: 400;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            color: #fff6ed;
+        }
+        .slide-desc {
+            font-size: 16px; line-height: 1.7; font-weight: 300;
+            color: #d1d5db; letter-spacing: 0.5px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+                        transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            transition-delay: 0.4s;
+        }
+        .slide.active .slide-desc { opacity: 1; transform: translateY(0); }
+
+        .slide-title .char,
+        .section-title .char {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(50px);
+            filter: blur(12px);
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+                        transform 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+                        filter 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .slide.active .slide-title .char,
+        .reveal.in .section-title .char { opacity: 1; transform: translateY(0); filter: blur(0); }
+        .slide.active { pointer-events: auto; }
+
+        /* ---------- Grid overlay ---------- */
+        .story-dashes {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .story-dash { width: 2px; height: 40px; background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
+        .story-dash-fill { width: 100%; height: 0%; background: #ffffff; border-radius: 2px; }
+
+        .grid-horizontal-line {
+            position: fixed; top: 70px; left: 0; right: 0;
+            width: 100%; height: 1px;
+            background: rgba(255, 255, 255, 0.12);
+            z-index: 5; pointer-events: none;
+        }
+        .grid-lines {
+            position: fixed; top: 0; left: 40px; right: 40px;
+            width: calc(100% - 80px); height: 100vh;
+            display: flex; justify-content: space-between;
+            z-index: 5; pointer-events: none;
+        }
+        .grid-line {
+            position: relative; width: 1px; height: 100%;
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .grid-line:nth-child(3) { margin-top: 70px; height: calc(100vh - 70px); }
+        .grid-dot {
+            position: absolute; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px; height: 6px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.35);
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.15);
+        }
+
+        /* ---------- Scroll experience track ---------- */
+        /* The 900vh cinematic scroll lives here; the shop sections follow it in normal flow. */
+        #experience { height: 900vh; pointer-events: none; }
+
+        /* ---------- Shop sections (gallery + checkout) ---------- */
+        .shop-section {
+            position: relative;
+            z-index: 9;
+            padding: 140px 60px 100px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.82) 22vh, rgba(0, 0, 0, 0.94) 100%);
+        }
+        .shop-section + .shop-section { background: rgba(0, 0, 0, 0.94); padding-top: 100px; }
+
+        .eyebrow {
+            display: block;
+            font-size: 10px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 18px;
+        }
+        .section-head {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            gap: 40px; margin-bottom: 48px;
+        }
+        .section-title {
+            font-family: 'Italiana', serif;
+            font-size: 84px; line-height: 1.0; font-weight: 400; letter-spacing: 2px;
+            color: #fff6ed;
+        }
+        .section-lede {
+            max-width: 420px;
+            margin-top: 20px;
+            font-size: 16px; line-height: 1.7; font-weight: 300; letter-spacing: 0.5px;
+            color: #d1d5db;
+        }
+
+        .reveal .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.4s,
+                        transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.4s;
+        }
+        .reveal.in .fade-up { opacity: 1; transform: translateY(0); }
+
+        .row-controls { display: flex; gap: 10px; flex-shrink: 0; }
+        .round-btn {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: transparent; color: #ffffff;
+            font-family: inherit; font-size: 16px;
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
+        }
+        .round-btn:hover { background: #ffffff; color: #000000; border-color: #ffffff; }
+
+        .gallery-row {
+            display: flex; gap: 20px;
+            margin: 0 -60px;
+            padding: 0 60px 10px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-padding: 0 60px;
+            scrollbar-width: none;
+        }
+        .product-card {
+            --c: #ffffff;
+            flex: 0 0 clamp(250px, 22vw, 320px);
+            scroll-snap-align: start;
+            display: flex; flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.02);
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.6s;
+        }
+        .product-card:hover { transform: translateY(-6px); border-color: rgba(255, 255, 255, 0.3); }
+        .card-visual {
+            position: relative;
+            aspect-ratio: 4 / 5;
+            display: grid; place-items: center;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 62%, color-mix(in srgb, var(--c) 38%, transparent) 0%, transparent 62%), #050505;
+            transition: background-size 0.6s;
+        }
+        .card-visual::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 62%, color-mix(in srgb, var(--c) 30%, transparent) 0%, transparent 55%);
+            opacity: 0;
+            transition: opacity 0.6s;
+        }
+        .product-card:hover .card-visual::after { opacity: 1; }
+        .mini-bottle {
+            position: relative; z-index: 1;
+            width: 34%; aspect-ratio: 0.82;
+            margin-top: 22%;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: linear-gradient(115deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04) 40%, rgba(255, 255, 255, 0.1));
+            overflow: visible;
+        }
+        .mini-bottle::before {
+            content: '';
+            position: absolute; left: 50%; bottom: 100%;
+            width: 46%; height: 34%;
+            transform: translate(-50%, -4px);
+            border-radius: 3px;
+            background: linear-gradient(90deg, #8a6a3e, #e2c38d 45%, #9c7a48);
+        }
+        .mini-bottle::after {
+            content: '';
+            position: absolute; left: 9%; right: 9%; bottom: 9%;
+            height: 58%;
+            border-radius: 8px;
+            background: linear-gradient(180deg, color-mix(in srgb, var(--c) 85%, white), var(--c));
+            opacity: 0.85;
+        }
+        .card-body { display: flex; flex-direction: column; flex: 1; padding: 22px 22px 24px; }
+        .card-family {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600;
+            color: var(--c);
+        }
+        .card-name {
+            margin: 10px 0 8px;
+            font-family: 'Italiana', serif; font-size: 32px; font-weight: 400; line-height: 1.05;
+            color: #fff6ed;
+        }
+        .card-notes { font-size: 13px; line-height: 1.6; font-weight: 300; color: #9ca3af; letter-spacing: 0.3px; }
+        .card-foot {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: auto; padding-top: 22px;
+        }
+        .card-price { font-size: 15px; letter-spacing: 1px; }
+        .card-size { display: block; font-size: 10px; color: #6b7280; letter-spacing: 1px; margin-top: 2px; }
+        .add-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 9px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 20px;
+            background: transparent; color: #ffffff;
+            font-family: inherit; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+            transition: background 0.3s, color 0.3s, transform 0.3s;
+        }
+        .add-btn:hover { background: #ffffff; color: #000000; transform: scale(1.05); }
+        .add-btn.added { background: var(--c); border-color: var(--c); color: #000000; }
+
+        /* ---------- Checkout (placeholder) ---------- */
+        .checkout-grid {
+            display: grid; grid-template-columns: 1.3fr 1fr; gap: 60px;
+            align-items: start;
+        }
+        .panel {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.02);
+            padding: 32px;
+        }
+        .panel-title {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600;
+            color: #9ca3af; margin-bottom: 24px;
+        }
+        .bag-empty { font-size: 15px; font-weight: 300; color: #9ca3af; line-height: 1.7; }
+        .bag-empty a { color: #ffffff; }
+        .bag-line {
+            display: grid; grid-template-columns: 14px 1fr auto auto; gap: 18px; align-items: center;
+            padding: 18px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .bag-line:first-child { border-top: none; padding-top: 0; }
+        .bag-swatch { width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); }
+        .bag-name { font-family: 'Italiana', serif; font-size: 24px; color: #fff6ed; }
+        .bag-meta { display: block; font-size: 11px; color: #6b7280; letter-spacing: 1px; margin-top: 2px; }
+        .qty { display: inline-flex; align-items: center; gap: 12px; font-size: 13px; }
+        .qty button {
+            width: 26px; height: 26px; border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3); background: transparent; color: #ffffff;
+            font-family: inherit; font-size: 13px; line-height: 1;
+        }
+        .qty button:hover { background: #ffffff; color: #000000; }
+        .bag-line-price { font-size: 14px; letter-spacing: 1px; min-width: 70px; text-align: right; }
+        .totals { margin-top: 26px; padding-top: 22px; border-top: 1px solid rgba(255, 255, 255, 0.15); }
+        .totals-row { display: flex; justify-content: space-between; font-size: 14px; color: #d1d5db; padding: 5px 0; }
+        .totals-row.grand { font-size: 18px; color: #ffffff; margin-top: 8px; }
+        .field { display: block; margin-bottom: 18px; }
+        .field span {
+            display: block;
+            font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #9ca3af;
+            margin-bottom: 10px;
+        }
+        .field input {
+            width: 100%;
+            padding: 14px 0;
+            background: transparent;
+            border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff; font-family: inherit; font-size: 15px; font-weight: 300;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .field input:focus { border-bottom-color: var(--accent); }
+        .checkout-btn { width: 100%; justify-content: center; padding: 16px 24px; border: none; font-family: inherit; margin-top: 10px; }
+        .checkout-btn:disabled { opacity: 0.35; transform: none; }
+        .checkout-note { margin-top: 18px; font-size: 12px; line-height: 1.6; color: #6b7280; }
+        .checkout-msg {
+            display: none;
+            margin-top: 18px; padding: 14px 16px;
+            border-left: 2px solid var(--accent);
+            font-size: 13px; line-height: 1.6; color: #d1d5db;
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .checkout-msg.show { display: block; }
+
+        .site-footer {
+            position: relative; z-index: 9;
+            display: flex; justify-content: space-between; align-items: center; gap: 20px;
+            padding: 30px 60px 40px;
+            background: rgba(0, 0, 0, 0.94);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #6b7280;
+        }
+
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 1px solid var(--accent);
+            outline-offset: 3px;
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 1100px) {
+            .slide-title { font-size: 84px; }
+            .section-title { font-size: 64px; }
+            .checkout-grid { grid-template-columns: 1fr; gap: 30px; }
+        }
+
+        @media (max-width: 768px) {
+            .cinematic-container { padding: 0 20px 24px 20px; }
+
+            .main-header { flex-wrap: wrap; row-gap: 14px; padding: 16px 0 0; }
+            .brand { font-size: 12px; letter-spacing: 3px; }
+            .header-nav { order: 3; width: 100%; justify-content: center; gap: 14px; }
+            .contact-btn { padding: 9px 18px; }
+
+            .slide { bottom: 5%; }
+            .slide-title { font-size: clamp(46px, 14vw, 64px); margin-bottom: 14px; }
+            .slide-desc { font-size: 14px; line-height: 1.6; }
+
+            #slide-1 .slide-title { margin-left: 20px; }
+            #slide-1 .desc-row { flex-direction: column; gap: 12px; }
+            #slide-1 .col-1,
+            #slide-1 .col-2 {
+                position: static;
+                margin-left: 20px;
+                width: calc(100% - 40px);
+                max-width: none;
+            }
+
+            #slide-2-img { top: 120px; left: 20px; width: 40vw; }
+            #slide-2 .slide-title { margin-left: 20px; }
+            #slide-2 .slide-desc { margin-left: 20px; width: calc(100% - 40px); max-width: none; }
+
+            #slide-3 { left: 20px; width: calc(100% - 40px); max-width: none; }
+            #slide-3 .slide-title { white-space: normal; }
+
+            #slide-4 { left: 20px; right: 20px; max-width: none; }
+
+            .grid-horizontal-line { top: 104px; }
+            .grid-lines { left: 12px; right: 12px; width: calc(100% - 24px); }
+            .grid-line:nth-child(3) { margin-top: 104px; height: calc(100vh - 104px); }
+            .story-dash { height: 26px; }
+
+            .shop-section { padding: 150px 20px 70px; }
+            .shop-section + .shop-section { padding-top: 70px; }
+            .section-head { flex-direction: column; align-items: flex-start; gap: 24px; margin-bottom: 32px; }
+            .section-title { font-size: clamp(44px, 12vw, 60px); }
+            .section-lede { font-size: 14px; }
+            .gallery-row { margin: 0 -20px; padding: 0 20px 10px; scroll-padding: 0 20px; gap: 14px; }
+            .product-card { flex-basis: 78vw; }
+            .panel { padding: 22px; }
+            .bag-line { grid-template-columns: 10px 1fr auto; gap: 12px; }
+            .bag-line-price { grid-column: 2 / 4; text-align: left; }
+            .site-footer { padding: 24px 20px 32px; flex-direction: column; align-items: flex-start; }
+        }
+
+        /* Touch devices: no custom cursor, restore the native one */
+        @media (hover: none), (pointer: coarse) {
+            * { cursor: auto !important; }
+            .cursor-inner, .cursor-outer { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom cursor -->
+    <div class="cursor-inner"></div>
+    <div class="cursor-outer"></div>
+
+    <div class="cinematic-container">
+        <div class="main-header">
+            <div class="brand" data-brand>[BRAND NAME]</div>
+            <nav class="header-nav">
+                <a href="#slide-1" class="nav-link is-active">Woody</a>
+                <span class="nav-dot"></span>
+                <a href="#slide-2" class="nav-link">Citrus</a>
+                <span class="nav-dot"></span>
+                <a href="#slide-3" class="nav-link">Amber</a>
+                <span class="nav-dot"></span>
+                <a href="#slide-4" class="nav-link">Fresh</a>
+            </nav>
+            <div class="header-actions">
+                <a href="#checkout" class="contact-btn" id="shop-btn">Shop <span class="bag-count" id="bag-count">0</span><span class="btn-circle"></span></a>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-1">
+            <h2 class="slide-title">Scent <br>and Memory</h2>
+            <div class="desc-row">
+                <p class="slide-desc col-1">A fragrance keeps what the eye forgets. Cedar, vetiver and smoked oud rest at its heart, the quiet warmth of a room you once loved and never left.</p>
+                <p class="slide-desc col-2">Composed by hand in small batches, each accord is left to mature until it softens and finally speaks. A memory, distilled and held in glass.</p>
+            </div>
+        </div>
+        <div class="slide-image-mask" id="slide-2-img">
+            <!-- Swap this for your own campaign / product photograph -->
+            <img src="https://api.getlayers.ai/storage/v1/object/public/public/assets/laocoon-59f84455c6/1.png" alt="Editorial Concept">
+        </div>
+        <div class="slide" id="slide-2">
+            <h2 class="slide-title">Golden <br>Light</h2>
+            <p class="slide-desc">Sicilian bergamot and bitter orange, cold-pressed at first light. A bright opening that lifts from the skin, then lingers like late sun on warm stone.</p>
+        </div>
+        <div class="slide" id="slide-3">
+            <h2 class="slide-title">Slow Amber</h2>
+            <p class="slide-desc">Labdanum, tonka and a thread of vanilla, melted slowly over resin. A base that deepens through the night and stays in the folds of a scarf for days.</p>
+        </div>
+        <div class="slide" id="slide-4">
+            <h2 class="slide-title">Pure <br>Air</h2>
+            <p class="slide-desc">Sea salt, cold iris and white musk. Clean as the first breath after rain, crafted to feel like almost nothing, and to be remembered anyway.</p>
+        </div>
+    </div>
+
+    <!-- Grid overlay -->
+    <div class="grid-horizontal-line"></div>
+    <div class="grid-lines">
+        <div class="grid-line"><div class="grid-dot top"></div><div class="grid-dot bottom"></div></div>
+        <div class="grid-line"><div class="grid-dot top"></div><div class="grid-dot bottom"></div></div>
+        <div class="grid-line"><div class="grid-dot top"></div><div class="grid-dot bottom"></div></div>
+        <div class="grid-line"><div class="grid-dot top"></div><div class="grid-dot bottom"></div></div>
+        <div class="grid-line story-progress-container">
+            <div class="grid-dot top"></div>
+            <div class="grid-dot bottom"></div>
+            <div class="story-dashes">
+                <div class="story-dash"><div class="story-dash-fill" id="dash-fill-1"></div></div>
+                <div class="story-dash"><div class="story-dash-fill" id="dash-fill-2"></div></div>
+                <div class="story-dash"><div class="story-dash-fill" id="dash-fill-3"></div></div>
+                <div class="story-dash"><div class="story-dash-fill" id="dash-fill-4"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="webgl"></canvas>
+
+    <!-- Cinematic scroll track (drives camera, shader, sparks and slides) -->
+    <div id="experience" aria-hidden="true"></div>
+
+    <!-- Gallery row: Discover more scents -->
+    <section class="shop-section reveal" id="discover">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow fade-up">The Collection</span>
+                <h2 class="section-title">Discover more scents</h2>
+                <p class="section-lede fade-up">Each composition begins with a single memory and is built note by note in our atelier, aged in small batches and finished by hand.</p>
+            </div>
+            <div class="row-controls fade-up">
+                <button class="round-btn" id="row-prev" aria-label="Previous scents">&larr;</button>
+                <button class="round-btn" id="row-next" aria-label="Next scents">&rarr;</button>
+            </div>
+        </div>
+        <div class="gallery-row fade-up" id="gallery-row"></div>
+    </section>
+
+    <!-- Checkout (placeholder) -->
+    <section class="shop-section reveal" id="checkout">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow fade-up">Checkout</span>
+                <h2 class="section-title">Your Selection</h2>
+                <p class="section-lede fade-up">Every bottle is filled to order, wrapped by hand and sent with a sample of its sister scent.</p>
+            </div>
+        </div>
+        <div class="checkout-grid fade-up">
+            <div class="panel">
+                <div class="panel-title">Bag</div>
+                <div id="bag-lines"></div>
+                <div class="totals" id="bag-totals">
+                    <div class="totals-row"><span>Subtotal</span><span id="subtotal">—</span></div>
+                    <div class="totals-row"><span>Shipping</span><span>Complimentary</span></div>
+                    <div class="totals-row grand"><span>Total</span><span id="total">—</span></div>
+                </div>
+            </div>
+            <form class="panel" id="checkout-form" novalidate>
+                <div class="panel-title">Details</div>
+                <label class="field">
+                    <span>Email</span>
+                    <input type="email" name="email" placeholder="you@example.com" autocomplete="email">
+                </label>
+                <button type="submit" class="contact-btn checkout-btn" id="checkout-btn" disabled>Continue to payment <span class="btn-circle"></span></button>
+                <p class="checkout-note">Payment is handled securely by our payment partner on the next step.</p>
+                <div class="checkout-msg" id="checkout-msg" role="status"></div>
+            </form>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <span data-brand>[BRAND NAME]</span>
+        <span>Composed by hand · Est. 2026</span>
+    </footer>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/examples/jsm/loaders/GLTFLoader.js": "https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js",
+            "three/examples/jsm/environments/RoomEnvironment.js": "https://unpkg.com/three@0.160.0/examples/jsm/environments/RoomEnvironment.js"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+        import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+
+        // ================= Brand & shop configuration =================
+        const BRAND_NAME = '[BRAND NAME]';
+        const CURRENCY = 'EUR';
+
+        // Drop a real bottle model at this path (relative to index.html).
+        // If it is missing or fails to load, a glass bottle built in code is used instead.
+        const BOTTLE_MODEL_URL = './assets/perfume_bottle.glb';
+        // The original statue forced roughness 0.42 / metalness 0.92 on every mesh.
+        // That ruins glass, so it is off for real bottle models; set true to re-enable.
+        const OVERRIDE_GLB_MATERIALS = false;
+        // Largest dimension of the hero object after auto-scaling (statue used 3.5).
+        const MODEL_TARGET_SIZE = 2.7;
+
+        // Per-scent glow palettes for the background wave shader (linear RGB),
+        // plus the bottle liquid tint and UI accent colour.
+        const SCENTS = [
+            {
+                name: 'Woody', accent: '#6f9a74', liquid: '#41622f',
+                shadow: [0.0004, 0.0010, 0.0006], wave1: [0.020, 0.062, 0.034],
+                wave2: [0.010, 0.034, 0.017], crest: [0.20, 0.42, 0.26]
+            },
+            {
+                name: 'Citrus', accent: '#e3c068', liquid: '#e6b43a',
+                shadow: [0.0010, 0.0008, 0.0003], wave1: [0.088, 0.064, 0.012],
+                wave2: [0.050, 0.035, 0.006], crest: [0.55, 0.43, 0.14]
+            },
+            {
+                name: 'Amber', accent: '#e08a46', liquid: '#c8601c',
+                shadow: [0.0012, 0.0005, 0.0002], wave1: [0.100, 0.038, 0.008],
+                wave2: [0.060, 0.020, 0.004], crest: [0.58, 0.28, 0.10]
+            },
+            {
+                name: 'Fresh', accent: '#a9d8f0', liquid: '#9fd2ec',
+                shadow: [0.0004, 0.0008, 0.0012], wave1: [0.020, 0.050, 0.076],
+                wave2: [0.010, 0.028, 0.050], crest: [0.30, 0.50, 0.66]
+            }
+        ];
+
+        const PRODUCTS = [
+            { id: 'cedre-nocturne', name: 'Cèdre Nocturne', family: 'Woody', notes: 'Atlas cedar · Vetiver · Smoked oud', price: 185, size: '100 ml' },
+            { id: 'bergamote-dor', name: "Bergamote d'Or", family: 'Citrus', notes: 'Bergamot · Neroli · Pink pepper', price: 160, size: '100 ml' },
+            { id: 'ambre-lent', name: 'Ambre Lent', family: 'Amber', notes: 'Labdanum · Tonka bean · Vanilla', price: 195, size: '100 ml' },
+            { id: 'iris-glace', name: 'Iris Glacé', family: 'Fresh', notes: 'Cold iris · Sea salt · White musk', price: 170, size: '100 ml' },
+            { id: 'bois-fume', name: 'Bois Fumé', family: 'Woody', notes: 'Birch tar · Leather · Patchouli', price: 210, size: '100 ml' },
+            { id: 'zeste-sauvage', name: 'Zeste Sauvage', family: 'Citrus', notes: 'Yuzu · Petitgrain · Green fig', price: 150, size: '100 ml' },
+            { id: 'resine-doree', name: 'Résine Dorée', family: 'Amber', notes: 'Benzoin · Saffron · Myrrh', price: 220, size: '100 ml' },
+            { id: 'fleur-de-sel', name: 'Fleur de Sel', family: 'Fresh', notes: 'Sea salt · Lemon zest · Ambrette', price: 155, size: '100 ml' }
+        ];
+
+        const ASSET_BASE_URL = "https://api.getlayers.ai/storage/v1/object/public/public/assets/laocoon-59f84455c6";
+
+        // ================= Globals =================
+        const canvas = document.querySelector('#webgl');
+        let scene, camera, renderer;
+        let gltfModel;     // the bottle
+        let modelPivot;    // pivot group for perfect center-rotation
+        let mixer;
+        const clock = new THREE.Clock();
+        let currentScroll = 0;   // smoothed accumulated scroll for lerping
+
+        let mouseX = 0, mouseY = 0, targetMouseX = 0, targetMouseY = 0;
+
+        let cursorX = window.innerWidth / 2,  cursorY = window.innerHeight / 2;
+        let outerCursorX = window.innerWidth / 2, outerCursorY = window.innerHeight / 2;
+
+        let bgMaterial;
+        const shaderUniforms = {
+            uTime: { value: 0 },
+            uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+            uMouse: { value: new THREE.Vector2(0, 0) },
+            uScroll: { value: 0 },
+            uShadow: { value: new THREE.Vector3(...SCENTS[0].shadow) },
+            uWave1: { value: new THREE.Vector3(...SCENTS[0].wave1) },
+            uWave2: { value: new THREE.Vector3(...SCENTS[0].wave2) },
+            uCrest: { value: new THREE.Vector3(...SCENTS[0].crest) }
+        };
+
+        // Scent state: target palette the shader uniforms ease toward
+        const scentTargets = SCENTS.map(s => ({
+            shadow: new THREE.Vector3(...s.shadow),
+            wave1: new THREE.Vector3(...s.wave1),
+            wave2: new THREE.Vector3(...s.wave2),
+            crest: new THREE.Vector3(...s.crest),
+            liquid: new THREE.Color(s.liquid)
+        }));
+        let activeScent = 0;
+        let navLock = null;          // { scent, scroll } while a nav click is scrolling
+        let liquidMaterial = null;   // placeholder bottle liquid (tinted per scent)
+        let envTexture = null;
+
+        let sparkParticles;
+        const sparkCount = 450;
+        const sparkData = [];
+
+        const sizes = { width: window.innerWidth, height: window.innerHeight };
+        const isNarrow = () => sizes.width <= 768;
+
+        // Scroll range of the cinematic part (the 900vh track), so the shop sections
+        // below don't change the timing of the slides / camera orbit.
+        function getExperienceMaxScroll() {
+            const track = document.getElementById('experience');
+            return Math.max(0, track.offsetTop + track.offsetHeight - window.innerHeight);
+        }
+
+        // ================= Scene =================
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color('#000000');
+            scene.fog = new THREE.FogExp2('#000000', 0.01);
+
+            camera = new THREE.PerspectiveCamera(50, sizes.width / sizes.height, 0.1, 100);
+            camera.position.set(0, 0.2, 3.0);
+            scene.add(camera);
+
+            createBackgroundShader();   // adds the wave plane as a child of the camera
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                antialias: true,
+                alpha: false,
+                powerPreference: "high-performance"
+            });
+            renderer.setSize(sizes.width, sizes.height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 2.2;
+
+            // Studio reflections for glass and metal (applied per material, not scene-wide)
+            const pmrem = new THREE.PMREMGenerator(renderer);
+            envTexture = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+            pmrem.dispose();
+
+            createLights();
+            createSparks();
+            loadModel();
+        }
+
+        function createLights() {
+            const ambientLight = new THREE.AmbientLight('#ffffff', 0.1);
+            scene.add(ambientLight);
+
+            // Key light: super-bright white from upper-right, casts shadows
+            const keyLight = new THREE.SpotLight('#ffffff', 18.0);
+            keyLight.position.set(4, 6, 3);
+            keyLight.angle = Math.PI / 4;
+            keyLight.penumbra = 0.9;
+            keyLight.castShadow = true;
+            keyLight.shadow.mapSize.width = 2048;
+            keyLight.shadow.mapSize.height = 2048;
+            keyLight.shadow.camera.near = 1.0;
+            keyLight.shadow.camera.far = 15;
+            keyLight.shadow.bias = -0.001;
+            scene.add(keyLight);
+
+            // Rim light: cool blue from behind-left, defines the silhouette
+            const rimLight = new THREE.DirectionalLight('#e3f2ff', 10.0);
+            rimLight.position.set(-5, 3, -4);
+            scene.add(rimLight);
+
+            // Fill light: very faint warm cream from below-front
+            const fillLight = new THREE.DirectionalLight('#fff3e6', 0.8);
+            fillLight.position.set(-2, -4, 2);
+            scene.add(fillLight);
+        }
+
+        // ================= Sparks =================
+        function createSparkTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 16; canvas.height = 16;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.25, 'rgba(255, 255, 255, 0.85)');
+            gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.3)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 16, 16);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createSparks() {
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(sparkCount * 3);
+            const colors = new Float32Array(sparkCount * 3);
+
+            for (let i = 0; i < sparkCount; i++) {
+                const x = (Math.random() - 0.5) * 6.5;
+                const y = (Math.random() - 0.5) * 5.0 - 0.5;
+                const z = (Math.random() - 0.5) * 6.5;
+                positions[i * 3] = x;
+                positions[i * 3 + 1] = y;
+                positions[i * 3 + 2] = z;
+
+                if (Math.random() < 0.6) {
+                    // saturated fiery orange
+                    colors[i * 3] = 1.0;
+                    colors[i * 3 + 1] = 0.4 + Math.random() * 0.15;
+                    colors[i * 3 + 2] = 0.05 + Math.random() * 0.1;
+                } else {
+                    // cosmic icy light-blue (matches rim light)
+                    colors[i * 3] = 0.55 + Math.random() * 0.15;
+                    colors[i * 3 + 1] = 0.82 + Math.random() * 0.12;
+                    colors[i * 3 + 2] = 1.0;
+                }
+
+                sparkData.push({
+                    speedX: (Math.random() - 0.5) * 0.4,
+                    speedY: 0.15 + Math.random() * 0.3,
+                    speedZ: (Math.random() - 0.5) * 0.4,
+                    swaySpeed: 0.5 + Math.random() * 1.5,
+                    swayRadius: 0.05 + Math.random() * 0.15,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.025,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.85,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                map: createSparkTexture()
+            });
+
+            sparkParticles = new THREE.Points(geometry, material);
+            scene.add(sparkParticles);
+        }
+
+        // ================= Hero object =================
+        function loadModel() {
+            const loader = new GLTFLoader();
+            loader.load(
+                BOTTLE_MODEL_URL,
+                (gltf) => {
+                    mountModel(gltf.scene, gltf.animations, OVERRIDE_GLB_MATERIALS);
+                },
+                undefined,
+                () => {
+                    console.info(`No bottle model at ${BOTTLE_MODEL_URL}, using the built-in glass bottle.`);
+                    mountModel(createPlaceholderBottle(), [], false);
+                }
+            );
+        }
+
+        // Shared mounting path for the real .glb and the placeholder:
+        // pivot group, shadows, auto-scale, recenter, lower the pivot.
+        function mountModel(object, animations, overrideMaterials) {
+            gltfModel = object;
+
+            modelPivot = new THREE.Group();
+            scene.add(modelPivot);
+            modelPivot.add(gltfModel);
+
+            gltfModel.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = !child.userData.noShadow;
+                    child.receiveShadow = !child.userData.noShadow;
+                    if (child.material) {
+                        if (overrideMaterials) {
+                            child.material.roughness = 0.42;   // semi-matte, noble highlights
+                            child.material.metalness = 0.92;   // high satin metallic sheen
+                        }
+                        child.material.flatShading = false;
+                        if (child.material.map) {
+                            child.material.map.anisotropy = 16;
+                        }
+                        if (child.material.isMeshStandardMaterial && !child.material.envMap) {
+                            child.material.envMap = envTexture;
+                            child.material.envMapIntensity = child.material.envMapIntensity ?? 1.0;
+                            child.material.needsUpdate = true;
+                        }
+                    }
+                }
+            });
+
+            if (animations && animations.length > 0) {
+                mixer = new THREE.AnimationMixer(gltfModel);
+                animations.forEach((clip) => { mixer.clipAction(clip).play(); });
+            }
+
+            // 1. scale so max dimension = MODEL_TARGET_SIZE
+            const boxInitial = new THREE.Box3().setFromObject(gltfModel);
+            const sizeInitial = boxInitial.getSize(new THREE.Vector3());
+            const maxDim = Math.max(sizeInitial.x, sizeInitial.y, sizeInitial.z);
+            const targetScale = MODEL_TARGET_SIZE / (maxDim > 0.0001 ? maxDim : 1);
+            gltfModel.scale.setScalar(targetScale);
+
+            // 2. update world matrix so the box accounts for scale
+            gltfModel.updateMatrixWorld(true);
+
+            // 3. exact geometric center of the scaled model
+            const boxScaled = new THREE.Box3().setFromObject(gltfModel);
+            const centerScaled = boxScaled.getCenter(new THREE.Vector3());
+
+            // 4. recenter model so its center sits at the pivot origin
+            gltfModel.position.sub(centerScaled);
+
+            // 5. lower the pivot for a grounded stance
+            modelPivot.position.y = -0.4;
+        }
+
+        function roundedRectShape(w, h, r) {
+            const s = new THREE.Shape();
+            const x = -w / 2, y = -h / 2;
+            s.moveTo(x + r, y);
+            s.lineTo(x + w - r, y);
+            s.quadraticCurveTo(x + w, y, x + w, y + r);
+            s.lineTo(x + w, y + h - r);
+            s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            s.lineTo(x + r, y + h);
+            s.quadraticCurveTo(x, y + h, x, y + h - r);
+            s.lineTo(x, y + r);
+            s.quadraticCurveTo(x, y, x + r, y);
+            return s;
+        }
+
+        function roundedBlock(w, h, r, depth, bevel) {
+            const geo = new THREE.ExtrudeGeometry(roundedRectShape(w, h, r), {
+                depth, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel,
+                bevelSegments: 8, curveSegments: 24
+            });
+            geo.center();
+            return geo;
+        }
+
+        function createLabelTexture() {
+            const c = document.createElement('canvas');
+            c.width = 1024; c.height = 280;
+            const ctx = c.getContext('2d');
+            const draw = () => {
+                const g = ctx.createLinearGradient(0, 0, c.width, 0);
+                g.addColorStop(0, '#9c7a48');
+                g.addColorStop(0.45, '#e6c891');
+                g.addColorStop(1, '#a5834f');
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, c.width, c.height);
+                ctx.fillStyle = '#1b130a';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                if ('letterSpacing' in ctx) ctx.letterSpacing = '14px';
+                ctx.font = '96px Italiana, serif';
+                ctx.fillText(BRAND_NAME.toUpperCase(), c.width / 2, c.height / 2 - 18);
+                if ('letterSpacing' in ctx) ctx.letterSpacing = '10px';
+                ctx.font = '600 30px Outfit, sans-serif';
+                ctx.fillText('EAU DE PARFUM', c.width / 2, c.height / 2 + 72);
+            };
+            draw();
+            const tex = new THREE.CanvasTexture(c);
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.anisotropy = 16;
+            document.fonts.load('96px Italiana').then(() => { draw(); tex.needsUpdate = true; });
+            return tex;
+        }
+
+        // Placeholder: thick rectangular glass flacon with tinted juice, gold collar and cap.
+        function createPlaceholderBottle() {
+            const bottle = new THREE.Group();
+
+            const glassMat = new THREE.MeshPhysicalMaterial({
+                color: '#ffffff',
+                metalness: 0,
+                roughness: 0.04,
+                transmission: 1,
+                thickness: 0.9,
+                ior: 1.5,
+                clearcoat: 1,
+                clearcoatRoughness: 0.05,
+                envMap: envTexture,
+                envMapIntensity: 0.9
+            });
+            // Same satin-metal treatment the bronze statue used (roughness 0.42, metalness 0.92)
+            const goldMat = new THREE.MeshStandardMaterial({
+                color: '#c9a36a',
+                roughness: 0.42,
+                metalness: 0.92,
+                envMap: envTexture,
+                envMapIntensity: 0.8
+            });
+            liquidMaterial = new THREE.MeshStandardMaterial({
+                color: SCENTS[activeScent].liquid,
+                emissive: SCENTS[activeScent].liquid,
+                emissiveIntensity: 0.18,
+                roughness: 0.15,
+                metalness: 0,
+                envMap: envTexture,
+                envMapIntensity: 0.5
+            });
+            liquidMaterial.color.copy(scentTargets[activeScent].liquid);
+            liquidMaterial.emissive.copy(scentTargets[activeScent].liquid);
+
+            // Glass body (1.78 x 2.18 x 1.08 including bevel)
+            const body = new THREE.Mesh(roundedBlock(1.5, 1.9, 0.28, 0.8, 0.14), glassMat);
+            body.userData.noShadow = true;
+            bottle.add(body);
+
+            // Juice
+            const liquid = new THREE.Mesh(roundedBlock(1.22, 1.3, 0.18, 0.5, 0.08), liquidMaterial);
+            liquid.position.y = -0.12;
+            liquid.userData.noShadow = true;
+            bottle.add(liquid);
+
+            // Neck
+            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.24, 48), glassMat);
+            neck.position.y = 1.2;
+            neck.userData.noShadow = true;
+            bottle.add(neck);
+
+            // Collar
+            const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.16, 48), goldMat);
+            collar.position.y = 1.38;
+            bottle.add(collar);
+
+            // Cap
+            const cap = new THREE.Mesh(roundedBlock(0.95, 0.62, 0.08, 0.62, 0.06), goldMat);
+            cap.position.y = 1.83;
+            bottle.add(cap);
+
+            // Front label plaque
+            const labelMat = new THREE.MeshStandardMaterial({
+                map: createLabelTexture(),
+                roughness: 0.35,
+                metalness: 0.85,
+                envMap: envTexture,
+                envMapIntensity: 0.8
+            });
+            const label = new THREE.Mesh(new THREE.PlaneGeometry(0.86, 0.235), labelMat);
+            label.position.set(0, -0.2, 0.545);
+            bottle.add(label);
+
+            return bottle;
+        }
+
+        // ================= Background wave shader =================
+        function createBackgroundShader() {
+            const vertexShader = `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `;
+
+            const fragmentShader = `
+                varying vec2 vUv;
+                uniform float uTime;
+                uniform vec2 uResolution;
+                uniform vec2 uMouse;
+                uniform float uScroll;
+                uniform vec3 uShadow;
+                uniform vec3 uWave1;
+                uniform vec3 uWave2;
+                uniform vec3 uCrest;
+
+                // 3D Noise function for organic warping (high performance hash-based noise)
+                float hash(float n) { return fract(sin(n) * 43758.5453123); }
+                float noise(in vec3 x) {
+                    vec3 p = floor(x);
+                    vec3 f = fract(x);
+                    f = f*f*(3.0-2.0*f);
+                    float n = p.x + p.y*57.0 + 113.0*p.z;
+                    return mix(mix(mix(hash(n+  0.0), hash(n+  1.0), f.x),
+                                   mix(hash(n+ 57.0), hash(n+ 58.0), f.x), f.y),
+                               mix(mix(hash(n+113.0), hash(n+114.0), f.x),
+                                   mix(hash(n+170.0), hash(n+171.0), f.x), f.y), f.z);
+                }
+
+                void main() {
+                    // Normalize UV coordinates
+                    vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution.xy) / uResolution.y;
+                    float aspect = uResolution.x / uResolution.y;
+
+                    float time = uTime * 0.08; // Extremely slow, calm breathing speed
+                    float scroll = uScroll;
+
+                    // --- 1. Constant Wave Parameters (Perfect Scroll Stability) ---
+                    float angle1 = 0.6;
+                    float angle2 = -0.7;
+                    float angle3 = 1.2;
+
+                    float freq1 = 2.4;
+                    float freq2 = 3.2;
+                    float freq3 = 4.0;
+
+                    // --- 2. Coordinates Distortion (Smooth Rounded Arcs & Scroll Deformation) ---
+                    vec2 warpedUv = uv;
+
+                    float scrollDeform = scroll * 5.0; // 5 radians of smooth sweeping deformation
+
+                    warpedUv.x += sin(uv.y * 2.5 + time * 0.2 + scrollDeform) * 0.35;
+                    warpedUv.y += cos(uv.x * 2.5 - time * 0.15 - scrollDeform * 0.8) * 0.35;
+
+                    warpedUv.x += sin(uv.y * 1.2 - time * 0.1 - scrollDeform * 1.5) * 0.25;
+                    warpedUv.y += cos(uv.x * 1.2 + time * 0.18 + scrollDeform * 1.2) * 0.25;
+
+                    vec2 scrollDrift = vec2(scroll * 0.04, -scroll * 0.02);
+                    vec2 mouseShift = vec2(uMouse.x * aspect * 0.05, uMouse.y * 0.05);
+                    warpedUv += scrollDrift + mouseShift;
+
+                    // --- 3. Layered Wave Computations ---
+                    vec2 dir1 = vec2(cos(angle1), sin(angle1));
+                    vec2 dir2 = vec2(cos(angle2), sin(angle2));
+                    vec2 dir3 = vec2(cos(angle3), sin(angle3));
+
+                    float w1 = sin(dot(warpedUv, dir1) * freq1 + time * 1.0);
+                    float w2 = cos(dot(warpedUv, dir2) * freq2 - time * 1.4 + w1 * 0.4);
+                    float w3 = sin(dot(warpedUv, dir3) * freq3 + time * 1.8 + w2 * 0.5);
+
+                    float waveField = w1 * 0.50 + w2 * 0.35 + w3 * 0.15;
+
+                    // --- 4. Crisp Lustre ---
+                    float wideSheen = pow(max(0.0, 1.0 - abs(waveField - 0.1)), 2.5);
+                    float crispSpecular = pow(max(0.0, 1.0 - abs(waveField - 0.15)), 8.0);
+                    float crest = wideSheen * 0.5 + crispSpecular * 0.9;
+
+                    // --- 5. Scent Palette (eased in JS between Woody / Citrus / Amber / Fresh) ---
+                    vec3 colShadow = uShadow;
+                    vec3 colWave1  = uWave1;
+                    vec3 colWave2  = uWave2;
+                    vec3 colCrest  = uCrest;
+
+                    // --- 6. Final Composition ---
+                    vec3 color = colShadow;
+                    color = mix(color, colWave2, smoothstep(-0.6, 0.2, waveField));
+                    color = mix(color, colWave1, smoothstep(0.0, 0.8, waveField));
+
+                    color += colCrest * crest * 1.4;
+
+                    float vignette = 1.0 - dot(uv, uv) * 0.12;
+                    color *= vignette;
+
+                    gl_FragColor = vec4(color, 1.0);
+                }
+            `;
+
+            bgMaterial = new THREE.ShaderMaterial({
+                vertexShader: vertexShader,
+                fragmentShader: fragmentShader,
+                uniforms: shaderUniforms,
+                depthWrite: false,
+                depthTest: false
+            });
+
+            const bgGeometry = new THREE.PlaneGeometry(30, 30);
+            const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
+            bgMesh.position.set(0.0, 0.0, -8.0);   // local camera space, far behind
+            bgMesh.renderOrder = -10;
+            camera.add(bgMesh);                    // attach to camera so it always fills view
+        }
+
+        function onWindowResize() {
+            sizes.width = window.innerWidth;
+            sizes.height = window.innerHeight;
+            camera.aspect = sizes.width / sizes.height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(sizes.width, sizes.height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            if (shaderUniforms) shaderUniforms.uResolution.value.set(sizes.width, sizes.height);
+        }
+
+        // ================= Interaction =================
+        window.addEventListener('mousemove', (event) => {
+            cursorX = event.clientX;
+            cursorY = event.clientY;
+            const cursorInner = document.querySelector('.cursor-inner');
+            if (cursorInner) { cursorInner.style.left = `${cursorX}px`; cursorInner.style.top = `${cursorY}px`; }
+            targetMouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            targetMouseY = (event.clientY / window.innerHeight) * 2 - 1;
+        });
+        window.addEventListener('resize', onWindowResize);
+
+        // A user-initiated scroll cancels the colour lock set by a nav click
+        ['wheel', 'touchstart', 'keydown'].forEach(evt =>
+            window.addEventListener(evt, () => { navLock = null; }, { passive: true })
+        );
+
+        function splitTitlesIntoChars() {
+            const titles = document.querySelectorAll('.slide-title, .section-title');
+            titles.forEach(title => {
+                const text = title.innerHTML;
+                let newHTML = '';
+                let delayCounter = 0;
+                const parts = text.split(/(<br\s*\/?>)/i);
+                parts.forEach(part => {
+                    if (part.toLowerCase().startsWith('<br')) {
+                        newHTML += part;
+                    } else {
+                        // chars are grouped per word so lines only wrap between words
+                        part.split(' ').forEach((word, w) => {
+                            if (w > 0) newHTML += ' ';
+                            if (!word) return;
+                            newHTML += '<span class="word">';
+                            for (let i = 0; i < word.length; i++) {
+                                newHTML += `<span class="char" style="transition-delay: ${delayCounter * 0.035}s">${word[i]}</span>`;
+                                delayCounter++;
+                            }
+                            newHTML += '</span>';
+                        });
+                    }
+                });
+                title.innerHTML = newHTML;
+            });
+        }
+
+        // ================= Scent switching =================
+        function scentFromScroll(scroll) {
+            if (scroll < 0.17) return 0;   // Woody   (slide 1)
+            if (scroll < 0.48) return 1;   // Citrus  (slide 2)
+            if (scroll < 0.78) return 2;   // Amber   (slide 3)
+            return 3;                      // Fresh   (slide 4)
+        }
+
+        function setScent(index) {
+            if (index === activeScent) return;
+            activeScent = index;
+            document.querySelectorAll('.nav-link').forEach((link, i) => link.classList.toggle('is-active', i === index));
+            document.documentElement.style.setProperty('--accent', SCENTS[index].accent);
+        }
+
+        function updateScent(scroll, deltaTime) {
+            if (navLock && Math.abs(scroll - navLock.scroll) < 0.01) navLock = null;
+            setScent(navLock ? navLock.scent : scentFromScroll(scroll));
+
+            // frame-rate independent ease (~1.5s to settle)
+            const k = 1.0 - Math.exp(-deltaTime * 2.5);
+            const target = scentTargets[activeScent];
+            shaderUniforms.uShadow.value.lerp(target.shadow, k);
+            shaderUniforms.uWave1.value.lerp(target.wave1, k);
+            shaderUniforms.uWave2.value.lerp(target.wave2, k);
+            shaderUniforms.uCrest.value.lerp(target.crest, k);
+            if (liquidMaterial) {
+                liquidMaterial.color.lerp(target.liquid, k);
+                liquidMaterial.emissive.copy(liquidMaterial.color);
+            }
+        }
+
+        // ================= Animation loop =================
+        function animate() {
+            requestAnimationFrame(animate);
+            const deltaTime = clock.getDelta();
+            if (mixer) mixer.update(deltaTime);
+
+            // 1. target scroll [0..1] over the cinematic track (goes past 1 in the shop sections)
+            const maxScroll = getExperienceMaxScroll();
+            const scrollTop = window.scrollY !== undefined ? window.scrollY
+                : (window.pageYOffset !== undefined ? window.pageYOffset : document.documentElement.scrollTop);
+            const targetScroll = maxScroll > 0 ? scrollTop / maxScroll : 0;
+
+            // smooth physical lerp (inertia)
+            currentScroll += (targetScroll - currentScroll) * 0.025;
+            const sceneScroll = Math.min(1.0, currentScroll);
+
+            // smooth model rotation lerp
+            mouseX += (targetMouseX - mouseX) * 0.05;
+            mouseY += (targetMouseY - mouseY) * 0.05;
+
+            // outer cursor ring lerps toward inner
+            outerCursorX += (cursorX - outerCursorX) * 0.2;
+            outerCursorY += (cursorY - outerCursorY) * 0.2;
+            const cursorOuter = document.querySelector('.cursor-outer');
+            if (cursorOuter) { cursorOuter.style.left = `${outerCursorX}px`; cursorOuter.style.top = `${outerCursorY}px`; }
+
+            // gentle interactive model tilt from mouse
+            if (modelPivot) {
+                modelPivot.scale.setScalar(isNarrow() ? 0.6 : 1.0);   // smaller hero on phones
+                modelPivot.rotation.y = mouseX * 0.25;
+                modelPivot.rotation.x = mouseY * 0.15;
+            }
+
+            // 2. sparks physics, accelerated/turbulent on fast scroll
+            if (sparkParticles) {
+                const positions = sparkParticles.geometry.attributes.position.array;
+                const time = clock.getElapsedTime();
+                const scrollVelocity = Math.abs(Math.min(1.0, targetScroll) - sceneScroll);
+                const speedMultiplier = 1.0 + scrollVelocity * 9.0;
+                const turbulence = scrollVelocity * 0.8;
+
+                for (let i = 0; i < sparkCount; i++) {
+                    const idx = i * 3;
+                    const data = sparkData[i];
+                    positions[idx]     += data.speedX * deltaTime * speedMultiplier;
+                    positions[idx + 1] += data.speedY * deltaTime * speedMultiplier;
+                    positions[idx + 2] += data.speedZ * deltaTime * speedMultiplier;
+
+                    const currentSway = data.swayRadius * (1.0 + turbulence * 4.0);
+                    positions[idx]     += Math.sin(time * data.swaySpeed + data.phase) * currentSway * deltaTime;
+                    positions[idx + 2] += Math.cos(time * data.swaySpeed + data.phase) * currentSway * deltaTime;
+
+                    // recycle when out of bounds
+                    if (positions[idx + 1] > 3.0 || Math.abs(positions[idx]) > 3.5 || Math.abs(positions[idx + 2]) > 3.5) {
+                        positions[idx + 1] = -2.5;
+                        positions[idx]     = (Math.random() - 0.5) * 3.0;
+                        positions[idx + 2] = (Math.random() - 0.5) * 3.0;
+                    }
+                }
+                sparkParticles.geometry.attributes.position.needsUpdate = true;
+            }
+
+            // 3. camera orbits the model 360° driven by scroll
+            const phi = sceneScroll * Math.PI * 2.0;
+            const y = 0.35 + Math.sin(sceneScroll * Math.PI) * 0.8;
+            const radius = 4.2 - Math.sin(sceneScroll * Math.PI) * 0.6;
+            const x = radius * Math.sin(phi);
+            const z = radius * Math.cos(phi);
+
+            // shift the framing left on the first screen to clear room for the text columns
+            // (on phones the text sits below the bottle, so frame it centred and a little higher)
+            let transitionProgress = Math.min(1.0, sceneScroll / 0.28);
+            let easeFactor = (Math.cos(transitionProgress * Math.PI) + 1.0) * 0.5; // 1.0 → 0.0
+            const lookAtXOffset = isNarrow() ? 0 : -0.9 * easeFactor;
+            const lookAtY = isNarrow() ? -1.15 : -0.15;
+            const targetLookAt = new THREE.Vector3(lookAtXOffset, lookAtY, 0);
+            const targetPos = new THREE.Vector3(x, y, z);
+            camera.position.lerp(targetPos, 0.025);
+            camera.lookAt(targetLookAt);
+
+            // background shader uniforms
+            if (shaderUniforms) {
+                shaderUniforms.uTime.value = clock.getElapsedTime();
+                shaderUniforms.uMouse.value.set(mouseX, -mouseY);
+                shaderUniforms.uScroll.value = sceneScroll;
+            }
+
+            document.querySelector('.cinematic-container').classList.toggle('in-shop', targetScroll > 1.05);
+
+            updateScent(currentScroll, deltaTime);
+            updateSlides(currentScroll);
+            updateGridDots(sceneScroll);
+            renderer.render(scene, camera);
+        }
+
+        function updateGridDots(scroll) {
+            const dots = document.querySelectorAll('.grid-dot');
+            dots.forEach((dot, i) => {
+                const startY = (i * 17) % 80 + 10;
+                let speed = 90 + (i * 55) % 180;
+                if (i % 2 === 0) speed = -speed;
+                let y = startY + scroll * speed;
+                y = ((y % 100) + 100) % 100;
+                dot.style.top = `${y}%`;
+            });
+        }
+
+        function updateSlides(scroll) {
+            const slide1 = document.getElementById('slide-1');
+            const slide2 = document.getElementById('slide-2');
+            const slide3 = document.getElementById('slide-3');
+            const slide4 = document.getElementById('slide-4');
+
+            for (let i = 1; i <= 4; i++) {
+                const fill = document.getElementById(`dash-fill-${i}`);
+                if (fill) {
+                    const start = (i - 1) * 0.25;
+                    const end = i * 0.25;
+                    let progress = (scroll - start) / (end - start);
+                    progress = Math.max(0, Math.min(1, progress));
+                    fill.style.height = `${progress * 100}%`;
+                }
+            }
+
+            function isActive(val, start, end) { return val >= start && val <= end; }
+
+            if (slide1) slide1.classList.toggle('active', isActive(scroll, -0.10, 0.12));
+            if (slide2) {
+                const active2 = isActive(scroll, 0.28, 0.40);
+                slide2.classList.toggle('active', active2);
+                const slide2Img = document.getElementById('slide-2-img');
+                if (slide2Img) slide2Img.classList.toggle('active', active2);
+            }
+            if (slide3) slide3.classList.toggle('active', isActive(scroll, 0.56, 0.68));
+            if (slide4) slide4.classList.toggle('active', isActive(scroll, 0.84, 1.05));
+        }
+
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const targetScrolls = [0.0, 0.34, 0.62, 0.94];
+            navLinks.forEach((link, index) => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // switch the glow to the clicked scent right away, without passing through the others
+                    navLock = { scent: index, scroll: targetScrolls[index] };
+                    const maxScroll = getExperienceMaxScroll();
+                    const targetY = maxScroll * targetScrolls[index];
+                    window.scrollTo({ top: targetY, behavior: 'smooth' });
+                });
+            });
+
+            document.getElementById('shop-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                navLock = null;
+                document.getElementById('checkout').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+
+        // ================= Shop: gallery row + placeholder checkout =================
+        const money = new Intl.NumberFormat('en', { style: 'currency', currency: CURRENCY, maximumFractionDigits: 0 });
+        const bag = new Map();   // product id -> quantity
+        const scentAccent = (family) => (SCENTS.find(s => s.name === family) || SCENTS[0]).accent;
+
+        function renderGallery() {
+            const row = document.getElementById('gallery-row');
+            row.innerHTML = PRODUCTS.map(p => `
+                <article class="product-card" style="--c: ${scentAccent(p.family)}">
+                    <div class="card-visual"><div class="mini-bottle"></div></div>
+                    <div class="card-body">
+                        <span class="card-family">${p.family}</span>
+                        <h3 class="card-name">${p.name}</h3>
+                        <p class="card-notes">${p.notes}</p>
+                        <div class="card-foot">
+                            <div class="card-price">${money.format(p.price)}<span class="card-size">${p.size}</span></div>
+                            <button class="add-btn" data-id="${p.id}">Add to bag</button>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+
+            row.addEventListener('click', (e) => {
+                const btn = e.target.closest('.add-btn');
+                if (!btn) return;
+                bag.set(btn.dataset.id, (bag.get(btn.dataset.id) || 0) + 1);
+                btn.classList.add('added');
+                btn.textContent = 'Added';
+                setTimeout(() => { btn.classList.remove('added'); btn.textContent = 'Add to bag'; }, 1400);
+                renderBag();
+            });
+
+            const step = () => (row.querySelector('.product-card')?.offsetWidth || 300) + 20;
+            document.getElementById('row-prev').addEventListener('click', () => row.scrollBy({ left: -step(), behavior: 'smooth' }));
+            document.getElementById('row-next').addEventListener('click', () => row.scrollBy({ left: step(), behavior: 'smooth' }));
+        }
+
+        function renderBag() {
+            const lines = document.getElementById('bag-lines');
+            const items = PRODUCTS.filter(p => bag.get(p.id) > 0);
+            const count = items.reduce((n, p) => n + bag.get(p.id), 0);
+            const subtotal = items.reduce((sum, p) => sum + p.price * bag.get(p.id), 0);
+
+            const badge = document.getElementById('bag-count');
+            badge.textContent = count;
+            badge.classList.toggle('has-items', count > 0);
+
+            document.getElementById('bag-totals').style.display = count ? '' : 'none';
+            document.getElementById('checkout-btn').disabled = count === 0;
+            document.getElementById('subtotal').textContent = money.format(subtotal);
+            document.getElementById('total').textContent = money.format(subtotal);
+
+            if (!count) {
+                lines.innerHTML = `<p class="bag-empty">Your bag is empty. <a href="#discover" id="bag-discover">Discover a scent</a> to begin.</p>`;
+                document.getElementById('bag-discover').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.getElementById('discover').scrollIntoView({ behavior: 'smooth' });
+                });
+                return;
+            }
+
+            lines.innerHTML = items.map(p => `
+                <div class="bag-line" style="--c: ${scentAccent(p.family)}">
+                    <span class="bag-swatch"></span>
+                    <div><span class="bag-name">${p.name}</span><span class="bag-meta">${p.family} · ${p.size}</span></div>
+                    <div class="qty">
+                        <button data-id="${p.id}" data-delta="-1" aria-label="Remove one ${p.name}">&minus;</button>
+                        <span>${bag.get(p.id)}</span>
+                        <button data-id="${p.id}" data-delta="1" aria-label="Add one ${p.name}">+</button>
+                    </div>
+                    <span class="bag-line-price">${money.format(p.price * bag.get(p.id))}</span>
+                </div>
+            `).join('');
+        }
+
+        function setupCheckout() {
+            document.getElementById('bag-lines').addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-delta]');
+                if (!btn) return;
+                const next = (bag.get(btn.dataset.id) || 0) + Number(btn.dataset.delta);
+                if (next > 0) bag.set(btn.dataset.id, next); else bag.delete(btn.dataset.id);
+                renderBag();
+            });
+
+            // Placeholder: hand the bag to your payment provider here
+            // (e.g. create a Stripe Checkout Session or Shopify cart and redirect to it).
+            document.getElementById('checkout-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const msg = document.getElementById('checkout-msg');
+                msg.textContent = 'Checkout is not connected yet. This is a placeholder step: connect your payment provider in setupCheckout() to take orders.';
+                msg.classList.add('show');
+            });
+
+            renderBag();
+        }
+
+        function setupReveals() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('in'); });
+            }, { threshold: 0.15 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        }
+
+        // ================= Bootstrap =================
+        window.addEventListener('DOMContentLoaded', () => {
+            document.title = `${BRAND_NAME} — Scent and Memory`;
+            document.querySelectorAll('[data-brand]').forEach(el => { el.textContent = BRAND_NAME; });
+
+            splitTitlesIntoChars();
+            init();
+            onWindowResize();
+            animate();
+            setupNavigation();
+            renderGallery();
+            setupCheckout();
+            setupReveals();
+        });
+    </script>
+</body>
+</html>
